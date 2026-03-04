@@ -1,0 +1,7 @@
+# Flutter/Dart tool folders
+.dart_tool/
+.packages
+build/
+
+# Local splash binaries should not be committed
+assets/splash/*.png

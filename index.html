@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripMe.ai Island Splash</title>
+  <style>
+    :root {
+      --sky-top: #2f8dfb;
+      --sky-mid: #62b3ff;
+      --sky-bottom: #dbf0ff;
+      --ocean-deep: #0350ae;
+      --ocean-mid: #0f79d6;
+      --ocean-light: #53d7f3;
+      --foam: rgba(238, 252, 255, 0.9);
+      --gold: #e9b443;
+      --gold-deep: #b87d0f;
+      --logo-white: #f4f8ff;
+      --text-shadow: rgba(4, 28, 60, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #000;
+      font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .screen {
+      width: min(100vw, calc(100vh * 9 / 16));
+      aspect-ratio: 9 / 16;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      background:
+        radial-gradient(140% 95% at 80% 90%, rgba(255, 255, 255, 0.32), transparent 60%),
+        linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 33%, #64c9fb 58%, #309be8 100%);
+      animation: intro 0.55s ease-out forwards;
+    }
+
+    .camera {
+      position: absolute;
+      inset: 0;
+      transform-origin: center;
+      animation: push 5s linear forwards;
+    }
+
+    .sun {
+      position: absolute;
+      width: 30%;
+      aspect-ratio: 1;
+      top: 5%;
+      left: -6%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 247, 215, 1) 0%, rgba(255, 226, 156, 0.8) 35%, rgba(255, 226, 156, 0) 72%);
+      filter: blur(1px);
+      animation: sunPulse 4s ease-in-out infinite;
+    }
+
+    .rays {
+      position: absolute;
+      inset: 0;
+      background:
+        conic-gradient(from 220deg at 7% 13%, rgba(255, 250, 214, 0.34), transparent 22%),
+        conic-gradient(from 232deg at 7% 13%, rgba(255, 250, 214, 0.24), transparent 18%);
+      mix-blend-mode: screen;
+      animation: rayMove 5s ease-in-out infinite;
+    }
+
+    .clouds,
+    .clouds::before,
+    .clouds::after {
+      position: absolute;
+      content: "";
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      filter: blur(1px);
+    }
+
+    .clouds {
+      width: 32%;
+      height: 4.8%;
+      top: 14%;
+      right: 12%;
+      animation: cloudDrift 7s ease-in-out infinite;
+    }
+
+    .clouds::before {
+      width: 45%;
+      height: 120%;
+      left: -22%;
+      top: -32%;
+    }
+
+    .clouds::after {
+      width: 40%;
+      height: 110%;
+      right: -17%;
+      top: -24%;
+    }
+
+    .ocean {
+      position: absolute;
+      inset: 34% -20% -28% -20%;
+      border-radius: 50%;
+      background:
+        radial-gradient(70% 45% at 50% 30%, rgba(131, 247, 255, 0.74), rgba(103, 220, 243, 0.2) 55%, transparent 80%),
+        radial-gradient(110% 75% at 52% 60%, var(--ocean-light) 0%, var(--ocean-mid) 45%, var(--ocean-deep) 100%);
+      animation: seaBreathe 8s ease-in-out infinite;
+    }
+
+    .ocean::before,
+    .ocean::after {
+      content: "";
+      position: absolute;
+      inset: 9% 14%;
+      border-radius: 50%;
+      border: 1px solid rgba(234, 251, 255, 0.35);
+      animation: wave 7s linear infinite;
+    }
+
+    .ocean::after {
+      inset: 15% 20%;
+      opacity: 0.65;
+      animation-duration: 10s;
+      animation-direction: reverse;
+    }
+
+    .island-wrap {
+      position: absolute;
+      inset: 19% 12% 13% 12%;
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+      animation: islandIn 1s ease 0.5s forwards;
+      filter: drop-shadow(0 30px 30px rgba(2, 28, 64, 0.45));
+    }
+
+    .island {
+      position: absolute;
+      inset: 0;
+      clip-path: path("M50 2 C47 5,44 11,45 17 C43 25,36 31,35 39 C34 47,26 53,25 60 C24 68,27 75,24 81 C20 88,13 93,12 101 C11 108,14 116,21 120 C25 123,27 127,29 132 C32 138,37 141,43 142 C49 143,54 139,56 133 C60 124,67 122,72 116 C77 109,77 100,74 93 C71 86,72 79,76 72 C80 66,82 59,79 52 C76 45,71 40,69 33 C66 26,67 19,66 13 C65 8,58 4,50 2 Z");
+      background:
+        radial-gradient(90% 60% at 45% 28%, #9add67 0%, #5ea93a 46%, #2f6d28 100%),
+        linear-gradient(130deg, rgba(232, 191, 102, 0.2), rgba(45, 110, 57, 0.08));
+    }
+
+    .shore {
+      position: absolute;
+      inset: -0.9%;
+      clip-path: inherit;
+      background: transparent;
+      filter: drop-shadow(0 0 0 rgba(0,0,0,0));
+      border: 8px solid rgba(255, 241, 204, 0.7);
+      mix-blend-mode: screen;
+      opacity: 0.42;
+    }
+
+    .forest,
+    .forest::before,
+    .forest::after {
+      position: absolute;
+      content: "";
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 38%, #9be873 0%, #4b8e36 68%, #2f5f26 100%);
+      box-shadow: 0 5px 7px rgba(23, 59, 26, 0.26);
+    }
+
+    .forest {
+      width: 38%;
+      height: 17%;
+      left: 31%;
+      top: 14%;
+    }
+
+    .forest::before {
+      width: 85%;
+      height: 92%;
+      left: -68%;
+      top: 44%;
+    }
+
+    .forest::after {
+      width: 110%;
+      height: 96%;
+      right: -88%;
+      top: 82%;
+    }
+
+    .rice {
+      position: absolute;
+      left: 26%;
+      bottom: 22%;
+      width: 34%;
+      height: 15%;
+      border-radius: 42% 48% 36% 38%;
+      background:
+        repeating-linear-gradient(165deg, rgba(191, 238, 89, 0.95) 0 5px, rgba(134, 198, 51, 0.96) 5px 10px),
+        linear-gradient(180deg, #abde54, #82ba2f);
+      box-shadow: inset 0 -7px 10px rgba(66, 111, 21, 0.28);
+      transform: rotate(-11deg);
+    }
+
+    .sigiriya {
+      position: absolute;
+      width: 20%;
+      aspect-ratio: 1.08;
+      right: 24%;
+      bottom: 26%;
+      border-radius: 38% 36% 32% 36%;
+      background: linear-gradient(160deg, #d8a362 0%, #b2743d 46%, #8a5126 100%);
+      box-shadow:
+        inset -12px -10px 14px rgba(82, 43, 14, 0.38),
+        inset 7px 8px 10px rgba(248, 203, 145, 0.28);
+    }
+
+    .stupa {
+      position: absolute;
+      width: 11%;
+      aspect-ratio: 1;
+      right: 11%;
+      bottom: 26%;
+      border-radius: 50% 50% 45% 45%;
+      background: linear-gradient(180deg, #ffffff, #eaf2ff);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.16);
+    }
+
+    .stupa::before {
+      content: "";
+      position: absolute;
+      width: 20%;
+      height: 18%;
+      top: -8%;
+      left: 40%;
+      border-radius: 2px;
+      background: #f7f9ff;
+    }
+
+    .waterfall {
+      position: absolute;
+      width: 4%;
+      height: 13%;
+      right: 20%;
+      bottom: 17.5%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(226, 251, 255, 0.95), rgba(138, 214, 240, 0.7) 46%, rgba(93, 191, 224, 0.07));
+      animation: fall 1.2s linear 1.5s infinite;
+    }
+
+    .mist {
+      position: absolute;
+      width: 21%;
+      height: 8%;
+      right: 14%;
+      bottom: 14%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(231, 250, 255, 0.72) 0%, rgba(218, 246, 255, 0.08) 70%);
+      filter: blur(2px);
+      opacity: 0;
+      animation: mistOn 0.8s ease 1.5s forwards, mistShift 4s ease-in-out 1.5s infinite;
+    }
+
+    .logo {
+      position: absolute;
+      left: 50%;
+      top: 44%;
+      transform: translate(-50%, 24px) perspective(800px) rotateX(16deg) rotateZ(-2deg);
+      opacity: 0;
+      z-index: 4;
+      animation: logoIn 1.15s cubic-bezier(.22,.8,.16,1) 2.45s forwards;
+    }
+
+    .logo-core {
+      display: inline-flex;
+      align-items: baseline;
+      font-weight: 900;
+      letter-spacing: -0.018em;
+      font-size: clamp(2.7rem, 11vw, 5.4rem);
+      color: var(--logo-white);
+      text-shadow:
+        0 1px 0 #fff,
+        0 2px 0 #d9e8ff,
+        0 3px 0 #b7d0ef,
+        0 6px 0 #7aa7d4,
+        0 18px 20px var(--text-shadow);
+    }
+
+    .logo-core .ai {
+      margin-left: 0.02em;
+      color: var(--gold);
+      text-shadow:
+        0 1px 0 #ffd68b,
+        0 2px 0 #f2be5a,
+        0 3px 0 #dd9b27,
+        0 6px 0 var(--gold-deep),
+        0 0 14px rgba(255, 211, 120, 0.65),
+        0 14px 20px rgba(67, 42, 0, 0.4);
+      animation: goldGlow 1.7s ease-in-out 2.7s infinite;
+    }
+
+    .halo {
+      position: absolute;
+      inset: -40% -15%;
+      z-index: -1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 229, 158, 0.32), transparent 72%);
+      animation: halo 2.2s ease-in-out 4s infinite;
+      opacity: 0.6;
+    }
+
+    .tagline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 5.8%;
+      text-align: center;
+      font-weight: 300;
+      font-size: clamp(0.74rem, 2.4vw, 1rem);
+      letter-spacing: 0.1em;
+      color: #fff;
+      opacity: 0;
+      animation: lineIn 1s ease 2.7s forwards;
+      z-index: 5;
+    }
+
+    .dust {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      animation: dustOn 0.8s ease 2.6s forwards;
+      z-index: 4;
+    }
+
+    .dust::before,
+    .dust::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 56% 45%, rgba(255, 224, 142, 0.82) 0 1.3px, transparent 2.2px),
+        radial-gradient(circle at 59% 44%, rgba(255, 217, 110, 0.74) 0 1.1px, transparent 2px),
+        radial-gradient(circle at 62% 47%, rgba(255, 231, 165, 0.7) 0 1.1px, transparent 2px);
+      animation: dust 4s linear infinite;
+    }
+
+    .dust::after {
+      opacity: 0.65;
+      animation-duration: 5.2s;
+      animation-direction: reverse;
+    }
+
+    .fade {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      animation: out 0.8s ease 4.2s forwards;
+      z-index: 6;
+    }
+
+    @keyframes intro { to { opacity: 1; } }
+    @keyframes push { from { transform: scale(1); } to { transform: scale(1.02); } }
+    @keyframes islandIn { to { opacity: 1; transform: none; } }
+    @keyframes seaBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+    @keyframes wave { from { transform: rotate(0deg) scale(1); } to { transform: rotate(2deg) scale(1.03); } }
+    @keyframes sunPulse { 0%,100% { opacity: 0.9; } 50% { opacity: 1; } }
+    @keyframes rayMove { 0%,100% { transform: rotate(0); } 50% { transform: rotate(2deg); } }
+    @keyframes cloudDrift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
+    @keyframes fall { from { background-position: 0 0; } to { background-position: 0 80px; } }
+    @keyframes mistOn { to { opacity: 1; } }
+    @keyframes mistShift { 0%,100% { transform: translateX(0);} 50% { transform: translateX(10px);} }
+    @keyframes logoIn { to { opacity: 1; transform: translate(-50%, 0) perspective(800px) rotateX(16deg) rotateZ(-2deg);} }
+    @keyframes goldGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.26); } }
+    @keyframes halo { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.08); opacity: 0.78; } }
+    @keyframes lineIn { to { opacity: 0.6; } }
+    @keyframes dustOn { to { opacity: 1; } }
+    @keyframes dust { from { transform: translateY(3px); } to { transform: translateY(-9px); } }
+    @keyframes out { to { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <section class="camera">
+      <div class="sun"></div>
+      <div class="rays"></div>
+      <div class="clouds"></div>
+      <div class="ocean"></div>
+
+      <div class="island-wrap">
+        <div class="island"></div>
+        <div class="shore"></div>
+        <div class="forest"></div>
+        <div class="rice"></div>
+        <div class="sigiriya"></div>
+        <div class="stupa"></div>
+        <div class="waterfall"></div>
+        <div class="mist"></div>
+      </div>
+
+      <div class="logo">
+        <div class="halo"></div>
+        <div class="logo-core">TripMe<span class="ai">.ai</span></div>
+      </div>
+
+      <div class="dust"></div>
+      <div class="tagline">Discover Sri Lanka, Your Way.</div>
+    </section>
+    <div class="fade"></div>
+  </main>
+</body>
+</html>
